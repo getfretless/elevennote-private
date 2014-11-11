@@ -48,7 +48,7 @@ class NotesController < ApplicationController
   private
 
     def note_params
-      params.require(:note).permit(:title, :body_text)
+      params.require(:note).permit(:title, :body_text, :body_html)
     end
 
     def load_notes

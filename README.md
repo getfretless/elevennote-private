@@ -349,3 +349,15 @@ Let's add another named `style.css.scss`:
   padding-right: 0 !important;
 }
 ```
+
+## Install Bootsy WYSIWYG Editor
+
+```ruby
+gem 'bootsy'
+```
+
+```shell
+rails generate bootsy:install
+rake bootsy:install:migrations
+rake db:migrate
+```

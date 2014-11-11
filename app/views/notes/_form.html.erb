@@ -10,7 +10,7 @@
     <%= f.label :title %>: <%= f.text_field :title %>
   </p>
   <p>
-    <%= f.text_area :body_text %>
+    <%= f.bootsy_area :body_html, editor_options: { image: false, html: true } %>
   </p>
   <%= f.submit :save %>
 <% end %>
