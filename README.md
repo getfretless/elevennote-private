@@ -79,7 +79,7 @@ bundle
 In order to actually use Bootstrap's styles, we'll need to include its stylesheets in app/assets/stylesheets/application.css.
 
 Add a new stylesheet file named:
-*app/assets/stylesheets/bootstrap.css.scss*
+*app/assets/stylesheets/structure.css.scss*
 ```ruby
 @import 'bootstrap-sprockets';
 @import 'bootstrap';
@@ -92,9 +92,9 @@ I kind of like keeping `application.css` as nothing more than a manifest for req
 
 Which requires all other stylesheets (alphabetically) and compliles them down to a single `application.css` in production.
 
-If you need special order for your stylesheets, then you might want to remove the `require_tree .` line, and require bootstrap explicity like so:
+If you need special order for your stylesheets, then you might want to remove the `require_tree .` line, and require structure explicity like so:
 ```css
- *= require 'boostrap'
+ *= require 'structure'
 ```
 
 Let's review our changes and make another commit.
