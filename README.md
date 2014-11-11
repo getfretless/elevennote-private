@@ -241,3 +241,76 @@ Let's commit this:
 ```shell
 git commit -m "Add User model and use has_secure_password"
 ```
+
+# `Note` model
+
+## Lab: `Note` model
+Create a `Note` model.
+
+A note should have the following fields:
+* `title`
+* 'body_html'
+* 'body_text'
+* `user_id`, with an index
+* timestamp fields
+
+Create a model, complete with database table, for `Note`. When you are finished, you should be able to do the following from the console:
+
+```ruby
+[1] pry(main)> ironman = User.create username: 'tstark', password: 'iamhandsome', password_confirmation: 'iamhandsome'
+[2] pry(main)> note = Note.new title: "Groceries", body_text: "Cookies and ice cream", body_html: "<ul><li>Cookies</li><li>ice cream</li></ul>"
+[3] pry(main)> note.user = ironman
+[4] pry(main)> note.save
+[5] pry(main)> ironman.notes
+```
+
+If everything is set up correctly, the last statement should return something like this:
+
+```ruby
+=> [#<Note id: 1, title: "Groceries", body_html: "<ul><li>Cookies</li><li>ice cream</li></ul>", body_text: "Cookies and ice cream", user_id: 1, created_at: "2014-11-09 20:06:58", updated_at: "2014-11-09 20:06:58">]
+```
+
+## Solution
+
+_app/models/note.rb_
+```ruby
+class Note < ActiveRecord::Base
+  belongs_to :user
+end
+```
+
+_app/models/user.rb_
+```ruby
+class User < ActiveRecord::Base
+  has_secure_password
+  has_many :notes
+  validates :password, length: { :minimum => 8 }
+end
+```
+
+```shell
+bin/rails g migration create_notes
+```
+
+```ruby
+class CreateNotes < ActiveRecord::Migration
+  def change
+    create_table :notes do |t|
+      t.string :title
+      t.string :body_html
+      t.string :body_text
+      t.references :user, index:true
+      t.timestamps
+    end
+  end
+end
+```
+
+```shell
+bin/rake db:migrate
+```
+
+Commit.
+```shell
+git commit -m "Add notes"
+```
