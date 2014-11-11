@@ -101,3 +101,143 @@ Let's review our changes and make another commit.
 ```shell
 git commit -m "Add bootstrap-sass"
 ```
+
+# `User` model
+
+We will not be using Devise in this app. We're going to roll our own authentication system.
+
+Create a `User` model, inheriting from `ActiveRecord::Base`.
+
+## [`has_secure_password`](http://api.rubyonrails.org/classes/ActiveModel/SecurePassword/ClassMethods.html#method-i-has_secure_password)
+Rails, since version 3.1, includes a method called `has_secure_password` that makes rolling our own authentication easier.
+
+```ruby
+class User < ActiveRecord::Base
+  has_secure_password
+end
+```
+
+`has_secure_password` does several interesting things. It adds `password` and `password_confirmation` methods to your model, but only _stores_ a bcrypt-encrypted password to the database
+
+It automatically adds validations to check for the presence of `password` and a matching `password_confirmation` value—neither of which is saved to the database unencrypted—upon creating a new record. It also adds an `authenticate` method.
+
+All `has_secure_password` requires is that your database table have a column called `password_digest`.
+
+## Lab: `create_users` migration
+
+Generate a `create_users` migration now. Include the following columns, all strings:
+
+* `username`
+* `name`
+* `password_digest`
+
+Also include timestamp columns.
+
+## Solution
+
+```shell
+bin/rails g migration create_users
+```
+
+```ruby
+class CreateUsers < ActiveRecord::Migration
+  def change
+    create_table :users do |t|
+      t.string :username
+      t.string :name
+      t.string :password_digest
+      t.timestamps
+    end
+  end
+end
+```
+
+```ruby
+class User < ActiveRecord::Base
+  has_secure_password
+end
+```
+
+## Extra
+
+Add a validation to make sure the password is at least 8 characters.
+
+```ruby
+class User < ActiveRecord::Base
+  has_secure_password
+  validates :password, length: { minimum: 8 }
+end
+```
+
+## Create the `users` table.
+
+Migrate the database to create the new table.
+
+```shell
+bin/rake db:migrate
+```
+
+## Test `User` in the console.
+
+Let's try creating a user with just a user name.
+
+```ruby
+[1] pry(main)> user = User.new
+=> #<User id: nil, username: nil, name: nil, password_digest: nil, created_at: nil, updated_at: nil>
+[2] pry(main)> user.username = "prezbiz"
+=> "prezbiz"
+[3] pry(main)> user.save
+   (0.2ms)  BEGIN
+   (0.2ms)  ROLLBACK
+=> false
+[4] pry(main)> user.errors.messages
+=> {:password=>["can't be blank", "is too short (minimum is 8 characters)"]}
+```
+
+It fails, as `password` is blank. It's also too short, naturally. Let's set a password and try again.
+
+```ruby
+[5] pry(main)> user.password = "abc12345"
+=> "abc12345"
+[6] pry(main)> user.save
+   (0.1ms)  BEGIN
+  SQL (0.4ms)  INSERT INTO "users" ("created_at", "password_digest", "updated_at", "username") VALUES ($1, $2, $3, $4) RETURNING "id"  [["created_at", "2014-11-09 19:24:39.810016"], ["password_digest", "$2a$10$VE9UwwRzhEG/i3o1RSPMAenPvwcqcb28M/wXz1Hh/Kro2MG3WjDUm"], ["updated_at", "2014-11-09 19:24:39.810016"], ["username", "prezbiz"]]
+   (6.6ms)  COMMIT
+=> true
+[7] pry(main)> user.password_digest
+=> "$2a$10$VE9UwwRzhEG/i3o1RSPMAenPvwcqcb28M/wXz1Hh/Kro2MG3WjDUm"
+```
+
+That works, and it stores the encrypted password in the database.
+
+By default, `has_secure_password` does not require that you re-enter the password into `password_confirmation`. But if you _do_ have a value for `password_confirmation`, it must match `password`.
+
+```ruby
+[8] pry(main)> ironman = User.new username: 'tstark', password: 'iamhandsome', password_confirmation: 'sosohandsome'
+
+=> #<User id: nil, username: "tstark", name: nil, password_digest: "$2a$10$QxLAzJ.13yB82ouGQNU8XudufRHj1MvuYyuHhlc7Ucd...", created_at: nil, updated_at: nil>
+[9] pry(main)> ironman.save
+   (0.1ms)  BEGIN
+   (0.1ms)  ROLLBACK
+=> false
+[10] pry(main)> ironman.errors.messages
+=> {:password_confirmation=>["doesn't match Password"]}
+```
+
+Make the two fields match, and it works.
+
+```ruby
+[11] pry(main)> captain = User.new username: "srogers", password: "MURRRICA!!!", password_confirmation: "MURRRICA!!!"
+
+=> #<User id: nil, username: "srogers", name: nil, password_digest: "$2a$10$Kh18B4cbsjpUCPAMyWF53eHDNuakFJBQeVtlEKhGre2...", created_at: nil, updated_at: nil>
+[12] pry(main)> captain.save
+   (0.1ms)  BEGIN
+  SQL (0.2ms)  INSERT INTO "users" ("created_at", "password_digest", "updated_at", "username") VALUES ($1, $2, $3, $4) RETURNING "id"  [["created_at", "2014-11-09 19:42:40.079761"], ["password_digest", "$2a$10$Kh18B4cbsjpUCPAMyWF53eHDNuakFJBQeVtlEKhGre2GOsJuRgWQe"], ["updated_at", "2014-11-09 19:42:40.079761"], ["username", "srogers"]]
+   (6.6ms)  COMMIT
+=> true
+```
+
+Let's commit this:
+```shell
+git commit -m "Add User model and use has_secure_password"
+```
