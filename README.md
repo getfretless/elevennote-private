@@ -102,6 +102,22 @@ Let's review our changes and make another commit.
 git commit -m "Add bootstrap-sass"
 ```
 
+Let's add another gem to use [Font-Awesome](http://fortawesome.github.io/Font-Awesome) in our project, for some fancy icons.
+
+Add a new gem to the `Gemfile` and run `bundle`:
+```ruby
+gem 'font-awesome-sass'
+```
+
+Then add a new stylesheet to use it. I'm calling it `fonts.css.scss`:
+```css
+@import "font-awesome-sprockets";
+@import "font-awesome";
+@import url(http://fonts.googleapis.com/css?family=Merriweather:400,300,300italic|Oxygen:400,300,700);
+```
+
+Commit.
+
 # `User` model
 
 We will not be using Devise in this app. We're going to roll our own authentication system.
