@@ -330,3 +330,22 @@ Commit.
 ```shell
 git commit -m "Add notes"
 ```
+
+Let's add another named `style.css.scss`:
+```css
+.container {
+  width: 100% !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.col-xs-12 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+```

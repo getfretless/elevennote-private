@@ -1,0 +1,16 @@
+<% if @note.persisted? %>
+  <%= link_to note_path(@note),
+    method: :delete,
+    data: { confirm: 'Are you sure?' } do %>
+    <i class='fa fa-trash-o'></i>
+  <% end %>
+<% end %>
+<%= form_for @note do |f| %>
+  <p>
+    <%= f.label :title %>: <%= f.text_field :title %>
+  </p>
+  <p>
+    <%= f.text_area :body_text %>
+  </p>
+  <%= f.submit :save %>
+<% end %>
