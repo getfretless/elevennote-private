@@ -21,6 +21,16 @@
 
 en:
   hello: "Hello world"
+  session:
+    flash:
+      create:
+        success: "Successfully logged in!"
+        failure: "There was a problem logging in with those credentials."
+  user:
+    flash:
+      create:
+        success: "Successfully signed up!"
+        failure: "There was a problem with your registration."
   note:
     flash:
       create:
