@@ -7,6 +7,15 @@ _config/routes.rb_
 ```ruby
 resources :users
 ```
+_app/views/layouts/application.html.erb_
+```ruby
+<header>
+  <div class="well">
+    ElevenNote
+    <%= link_to 'Sign Up', new_user_path %>
+  </div>
+</header>
+```
 _app/controllers/users_controller.rb_
 ```ruby
 class UsersController < ApplicationController
@@ -67,6 +76,38 @@ _app/models/user.rb_
 ```ruby
 validates :username, uniqueness: true
 ```
+
+We also know that we'll want to keep track of when the user is logged in or out. Typically, we call this a session. Let's make a sessions controller to log in and out. `new` for the login page, `create` for actually logging in, and `destroy` for logging out.
+There's no point in showing, listing, or updating a session, so we'll leave them out of the routes:
+_config/routes.rb_
+```ruby
+resources :sessions, only: [:new, :create, :destroy]
+```
+_app/controllers/sessions_controller.rb_
+```ruby
+class SessionsController < ApplicationController
+  def new
+  end
+end
+```
+_app/views/sessions/new.html.erb_
+```ruby
+<h3>Sign In</h3>
+<%= form_for sessions_path do |f| %>
+  <p>
+    <%= f.label :username %><br>
+    <%= f.text_field :username %>
+  </p>
+  <p>
+    <%= f.label :password %><br>
+    <%= f.password_field :password %>
+  </p>
+  <%= f.submit 'Sign In' %>
+<% end %>
+```
+
+If we go to `/sessions/new`, we should see a nice login form.
+
 
 ## Scoping notes to users
 

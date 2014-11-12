@@ -1,0 +1,12 @@
+<h3>Sign In</h3>
+<%= form_for sessions_path do |f| %>
+  <p>
+    <%= f.label :username %><br>
+    <%= f.text_field :username %>
+  </p>
+  <p>
+    <%= f.label :password %><br>
+    <%= f.password_field :password %>
+  </p>
+  <%= f.submit 'Sign In' %>
+<% end %>
