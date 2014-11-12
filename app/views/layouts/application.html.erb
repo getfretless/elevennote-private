@@ -14,7 +14,14 @@
       <header>
         <div class="well">
           ElevenNote
-          <%= link_to 'Sign Up', new_user_path %>
+          <div class="user-links">
+            <% if current_user.present? -%>
+              <%= link_to 'Logout', session_path(:current), method: :delete %>
+            <% else -%>
+              <%= link_to 'Login', new_session_path %> or
+              <%= link_to 'Sign Up', new_user_path %>
+            <% end -%>
+          </div>
         </div>
       </header>
     </div>
