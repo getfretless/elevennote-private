@@ -446,3 +446,122 @@ And we'll again call that in our actions (`create` and `update` only, in this ca
     render_or_redirect
   end
 ```
+
+## JSON API
+
+We want to be able to get at our notes programmatically, say, through a mobile app, or to integrate with someone else's app. Rails gives you all the pieces you need to do that with a minimum of pain.
+
+Because Rails encourages use of a RESTful pattern for resource-based controllers with standardized CRUD actions, it makes it easy to accept & return JSON, or even XML.
+
+If you take a look back at the scaffolded `chirps_controller.rb` in [ElevenPeeps](http://github.com/getfretless/elevenpeeps), you'll notice that each of the RESTful actions has a `respond_to` block and some have `.json.jbuilder` views. If we were to make requests to say, [http://localhost:3000/chirps.json](http://localhost:3000/chirps.json), you should see a JSON response in your browser.
+
+If viewing JSON with your web browser is something you do often, try installing [JSON Formatter](https://chrome.google.com/webstore/detail/bcjindcccaagfpapjjmafapmmgkkhgoa) if you are using Chrome for your web browser.
+
+Let's take a look at the source in elevenpeeps for a minute to see what it is doing.
+
+This is pretty great, but if you need to have standardized interfaces for 3rd-party integrations, then it is best to not have API code intermixed with our web application code.
+
+Let's add a new controller for the api, and since we want this to have a similar RESTful structure as the rest of our app, let's namespace it under `/api`, so `/api/notes.json` is a different action than the normal route `notes#index`.
+
+Additionally, let's namespace it under a version number, so if we have to change this API in the future, we don't break backwards compatibility with clients that have done integrations against your older versions of the API.
+
+Create a new route in `config/routes.rb`:
+```ruby
+namespace :api do
+  namespace :v1 do
+    resources :notes
+  end
+end
+```
+
+And add the necessary folders and files to get a file at `app/controllers/api/v1/notes_controller.rb` with a basic `index` action that responds to `.json`:
+```ruby
+class API::V1::NotesController < ApplicationController
+  def index
+    @notes = Note.all
+    respond_to do |format|
+      format.json do
+        render json: @notes.to_json
+      end
+    end
+  end
+end
+```
+
+The `to_json` method can be called on any ActiveRecord model or relation, and we just called it on a relation, to return a collection of JSON hashes inside an array.
+
+This will also allow you to get a response from `/api/v1/notes` in addtion to `/api/v1/notes.json`.
+
+However, because this is an API that we don't want to change, this is not a good thing to do.
+
+Because of the `@notes.to_json` conversion that is happening, will take all column names and render them out in the response JSON objects. What if we added a migration to add, remove, or rename a column? Then the JSON output could change, which may break applications that are consuming that API.
+
+Rails now ships by default with a gem named `jbuilder`, which makes it easier to map Ruby objects to thier JSON representation in a way, that even if we update the model, the JSON "views" won't change.
+
+Let's add a `jbuilder` view for `api/v1#index` in `app/views/api/v1/notes/index.json.jbuilder`:
+```ruby
+json.array!(@notes) do |note|
+  json.extract! note, :id, :title, :body_text, :body_html, :created_at, :updated_at
+  json.url api_v1_note_url(note, format: :json)
+end
+```
+
+Note the `json.extract!` takes the `note` object, and an array of symbols that correspond to the columns we want to display. If those columns do change, then the json may not have a value for that anymore, but it will still include the JSON key in the response with that name.
+
+Also note the custom attribute `json.url` that I set up to link to the `_url` path for this object. This is a technique used for "disoverable" API's (sometimes called HyperMedia). This lets an API consumer load some data, and have it apparent of where you can go to get more information.
+
+Now that the view is in place, we can remove the `render json: @notes.to_json` block to look like this:
+```ruby
+def index
+  @notes = Note.all
+  respond_to do |format|
+    format.json
+  end
+end
+```
+
+or the shorter:
+```ruby
+def index
+  @notes = Note.all
+  respond_to :json
+end
+```
+
+And our JSON should look really nice.
+
+LAB: Like the `index` method, make a `show` method for the `api/v1/notes_controller` with a reasonable `.jbuilder` template.
+
+SOLUTION:
+_app/controllers/api/v1/notes_controller.rb_
+```ruby
+class API::V1::NotesController < ApplicationController
+
+  def index
+    @notes = Note.all
+    respond_to :json
+  end
+
+  def show
+    @note = Note.find params[:id]
+    respond_to :json
+  end
+
+end
+```
+
+_app/views/api/v1/notes/show.json.jbuilder_
+```ruby
+json.extract! @note, :id, :title, :body_text, :body_html, :created_at, :updated_at
+```
+
+We can save ourselves from typing `respond_to :json` in every single action (since this is a JSON API...) by setting the default to 'json' like this:
+```ruby
+namespace :api, defaults: { format: 'json' } do
+  namespace :v1 do
+    resources :notes
+  end
+end
+```
+
+And now you can remove all `respond_to :json` calls in the api controllers.
