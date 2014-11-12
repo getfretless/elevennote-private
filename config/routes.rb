@@ -3,6 +3,9 @@ Rails.application.routes.draw do
   root 'notes#index'
   resources :notes
 
+  resources :users
+  # resources :sessions
+
   namespace :api, defaults: { format: 'json' } do
     namespace :v1 do
       resources :notes

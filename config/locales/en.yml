@@ -21,6 +21,11 @@
 
 en:
   hello: "Hello world"
+  user:
+    flash:
+      create:
+        success: "Successfully signed up!"
+        failure: "There was a problem with your registration."
   note:
     flash:
       create:

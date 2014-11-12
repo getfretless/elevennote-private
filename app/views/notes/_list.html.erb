@@ -1,5 +1,7 @@
-<ul>
-  <% @notes.each do |note| -%>
-    <li><%= link_to note.title, note %></li>
-  <% end -%>
-</ul>
+<% if @notes.present? %>
+  <ul>
+    <% @notes.each do |note| -%>
+      <li><%= link_to note.title, note %></li>
+    <% end -%>
+  </ul>
+<% end %>
