@@ -21,9 +21,11 @@ Run `RAILS_ENV=test bin/setup` to also setup the test database.
 Add the Ruby version to the `Gemfile` and check the Rails version.
 ```ruby
 ruby '2.1.4'
-gem 'rails, '4.2.0.beta4'
+gem 'rails', '4.2.0.beta4'
 ```
+
 And add a `.ruby-version` file to match.
+
 ```shell
 echo '2.1.4' > .ruby-version
 ```
@@ -327,9 +329,11 @@ bin/rake db:migrate
 ```
 
 Commit.
+
 ```shell
 git commit -m "Add notes"
 ```
+## Add CSS
 
 Let's add another named `style.css.scss`:
 ```css
@@ -360,4 +364,85 @@ gem 'bootsy'
 rails generate bootsy:install
 rake bootsy:install:migrations
 rake db:migrate
+```
+
+Replace the `text_area` with `bootsy_area`.
+
+_app/views/notes/_form.html.erb_
+```erb
+<%= f.bootsy_area :body_html, editor_options: { image: false, html: true } %>
+```
+
+## turbolinks
+
+Explain clash between turbolinks and bootsy.
+
+## Using Locales
+
+_config/locales/en.yml_
+```yaml
+en:
+  hello: "Hello world"
+  note:
+    flash:
+      create:
+        success: "Your note has been created!"
+        failure: "There was a problem creating your note."
+      update:
+        success: "Saved!"
+        failure: "There was a problem saving your changes."
+      destroy:
+        success: "That note has been deleted."
+        failure: "We weren't able to delete that note."
+```
+
+Example usage:
+```ruby
+flash.now[:notice] = t("note.flash.create.success")
+```
+
+We can set all our flash messages in a private method in our controller.
+
+_app/controllers/notes_controller.rb_
+```ruby
+def set_flash_for(action_result)
+  if action_result
+    flash[:notice] = t("note.flash.#{action_name}.success")
+  else
+    flash.now[:alert] = t("note.flash.#{action_name}.failure")
+  end
+end
+```
+
+We can call this method from our controller actions as follows:
+
+_app/controllers/notes_controller.rb_
+```ruby
+def create
+  @note = Note.new note_params
+  set_flash_for @note.save
+  redirect_to new_note_path
+end
+```
+
+We still only want to redirect in the event that there are no errors when saving. We can use another private method to make that determination.
+
+```ruby
+def render_or_redirect
+  if @note.errors.any?
+    render :edit
+  else
+    redirect_to @note
+  end
+end
+```
+
+And we'll again call that in our actions (`create` and `update` only, in this case.):
+
+```ruby
+  def create
+    @note = Note.new note_params
+    set_flash_for @note.save
+    render_or_redirect
+  end
 ```
