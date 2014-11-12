@@ -87,13 +87,14 @@ _app/controllers/sessions_controller.rb_
 ```ruby
 class SessionsController < ApplicationController
   def new
+    @user = User.new
   end
 end
 ```
 _app/views/sessions/new.html.erb_
 ```ruby
 <h3>Sign In</h3>
-<%= form_for sessions_path do |f| %>
+<%= form_for @user, url: sessions_path do |f| %>
   <p>
     <%= f.label :username %><br>
     <%= f.text_field :username %>
@@ -107,7 +108,42 @@ _app/views/sessions/new.html.erb_
 ```
 
 If we go to `/sessions/new`, we should see a nice login form.
+When we try to submit it, it should blow up on the create action (because there is no template). However, we don't need a template, we need to check if the user exists and the password encrypts to match the encrypted_password value in our database:
+__app/controllers/sessions_controller.rb_
+```ruby
+def create
+  user = User.find_by username: user_params[:username]
+  if user.present? && user.authenticate(user_params[:password])
+    session[:user_id] = user.id
+    redirect_to root_url, notice: t('session.flash.create.success')
+  else
+    @user = User.new username: user_params[:username]
+    flash.now.alert = t('session.flash.create.failure')
+    render :new
+  end
+end
 
+private
+
+def user_params
+  params.require(:user).permit(:username, :password)
+end
+```
+_config/locales/en.yml_
+```yaml
+en:
+  hello: "Hello world"
+  session:
+    flash:
+      create:
+        success: "Successfully logged in!"
+        failure: "There was a problem logging in with those credentials."
+```
+
+The `user.authenticate()` method is provided by `has_secure_password`. We didn't even have to write it!
+The `session[:user_id] = user.id` part, is how we will keep track of the logged-in user. This is stored in an encrypted cookie, and can be read in on page load to set `current_user`.
+
+Now we should be able to log in.
 
 ## Scoping notes to users
 
