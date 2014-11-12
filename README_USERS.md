@@ -143,7 +143,29 @@ en:
 The `user.authenticate()` method is provided by `has_secure_password`. We didn't even have to write it!
 The `session[:user_id] = user.id` part, is how we will keep track of the logged-in user. This is stored in an encrypted cookie, and can be read in on page load to set `current_user`.
 
-Now we should be able to log in.
+Now we should be able to log in, however, we still can't easily tell if you are logged in or not, so let's create a method available to all our controllers:
+_app/controllers/application_controller.rb_
+```ruby
+#...
+helper_method :current_user
+
+private
+
+def current_user
+  @current_user ||= User.find(session[:user_id]) if session[:user_id]
+end
+```
+
+```yaml
+destroy:
+  success: "You are now logged out."
+```
+```ruby
+def destroy
+  session[:user_id] = nil
+  redirect_to root_url, notice: t('session.flash.destroy.success')
+end
+```
 
 ## Scoping notes to users
 
