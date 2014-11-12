@@ -156,10 +156,13 @@ def current_user
 end
 ```
 
+And a way to log out:
+_config/locales/en.yml_
 ```yaml
 destroy:
   success: "You are now logged out."
 ```
+_app/controllers/sessions_controller.rb_
 ```ruby
 def destroy
   session[:user_id] = nil
