@@ -1,3 +1,8 @@
+$title_color: #2dbe60;
+
+body {
+  font-family: Oxygen, Helvetica, Arial, sans-serif;
+}
 .container {
   width: 100% !important;
   padding-left: 0 !important;
@@ -12,4 +17,33 @@
 .col-xs-12 {
   padding-left: 0 !important;
   padding-right: 0 !important;
+}
+
+.bootsy_text_area {
+  width: 100%;
+  height: 150px;
+  border-color: #ccc;
+  border: none;
+}
+
+i.fa-trash-o {
+  color: #ccc;
+  font-size: 150%;
+  vertical-align: middle;
+  margin-left: 1em;
+  &:hover {
+    color: #999;
+  }
+}
+.wysihtml5-toolbar {
+  .btn-default {
+    color: #999;
+  }
+}
+input#note_title {
+  border: none;
+  font-size: 200%;
+  font-family: Merriweather;
+  color: $title_color;
+  font-weight: 300;
 }
