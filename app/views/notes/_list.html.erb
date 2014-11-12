@@ -1,5 +1,8 @@
-<ul>
+<ul id="notes">
   <% @notes.each do |note| -%>
-    <li><%= link_to note.title, note %></li>
+    <li data-url="<%= note_path(note) %>">
+      <%= content_tag :div, note.title, class: 'note-title' %>
+      <%= content_tag :div, note.body_html.to_s.html_safe, class: 'note-body' %>
+    </li>
   <% end -%>
 </ul>

@@ -3,7 +3,9 @@
     <%= f.text_field :title, placeholder: 'Title Your Note' %>
   </p>
   <p>
-    <%= f.bootsy_area :body_html, editor_options: { image: false, html: true }, placeholder: 'Just start typing...' %>
+    <%= f.bootsy_area :body_html, editor_options: {
+      font_styles: false, color: false, image: false, html: true
+      }, placeholder: 'Just start typing...' %>
   </p>
   <div class="form-actions">
     <%= f.submit class: 'btn btn-default' %>
