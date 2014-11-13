@@ -203,3 +203,12 @@ Look around the app. There are lots of calls like `@note = Note.find params[:id]
 
 Replace instances of `Note.find` with `current_user.notes.find`, and in the `load_notes` method, only load notes `if current_user.present?`, since the `index` view is still shown to not-logged-in users.
 
+## API authorization
+
+## Add root api route pointing to other resources?
+
+## Consume JSON API (HTTParty)
+  Rails.application.secrets / secrets.yml
+
+
+## Extract before_save to module & refactor to concern
