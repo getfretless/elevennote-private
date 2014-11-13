@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
   helper_method :current_user
 
   def authorize_user
-    redirect_to new_session_path, alert: 'Not authorized' if current_user.nil?
+    redirect_to login_path, alert: 'Please sign in to view that page.' if current_user.nil?
   end
 
   private

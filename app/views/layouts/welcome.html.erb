@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Elevennote</title>
+  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+  <%= csrf_meta_tags %>
+</head>
+<body id="welcome">
+
+<div class="container wrap">
+  <div class="row">
+    <div class="col-xs-12">
+      <header>
+        <div class="well">
+          ElevenNote
+        </div>
+      </header>
+    </div>
+  </header>
+  <div class="container">
+    <div class="row">
+      <div class="col-xs-12">
+        <main>
+          <!-- BEGIN main content -->
+          <%= flash_messages %>
+          <%= yield %>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

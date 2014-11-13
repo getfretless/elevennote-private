@@ -11,4 +11,13 @@ module ApplicationHelper
     end.join.html_safe
   end
 
+  def title_placeholder
+    return 'Title Your Note' if current_user.notes.any?
+    'Title Your First Note'
+  end
+
+  def title_autofocus?(note)
+    !note.persisted?
+  end
+
 end

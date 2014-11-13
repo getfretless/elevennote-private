@@ -2,5 +2,10 @@ class User < ActiveRecord::Base
   has_secure_password
   has_many :notes
   validates :password, length: { minimum: 8 }
-  validates :username, uniqueness: true
+  validates :username, uniqueness: true, presence: true
+
+  def display_name
+    return name if name.present?
+    username
+  end
 end

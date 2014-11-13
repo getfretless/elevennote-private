@@ -1,6 +1,9 @@
 <%= form_for @note do |f| %>
   <p>
-    <%= f.text_field :title, placeholder: 'Title Your Note' %>
+    <%= f.text_field :title,
+      placeholder: title_placeholder,
+      autofocus: title_autofocus?(f.object)
+    %>
   </p>
   <p>
     <%= f.bootsy_area :body_html, editor_options: {

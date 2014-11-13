@@ -30,12 +30,19 @@ header .well {
 h1, h2, h3, h4, h5 {
   font-family: Merriweather;
   font-weight: 300;
+  color: $highlight_color;
+}
+a:link, a:visited, a:hover, a:active {
+  color: $highlight_color;
 }
 .bootsy_text_area {
   width: 100%;
   border-color: #ccc;
   border: none;
   font-size: 120%;
+  &:focus {
+    outline: none;
+  }
 }
 
 i.fa-trash-o {
@@ -59,6 +66,9 @@ input#note_title {
   color: $highlight_color;
   font-weight: 300;
   width: 100%;
+  &:focus {
+    outline: none;
+  }
 }
 ul#notes {
   list-style: none;
@@ -105,8 +115,15 @@ ul#notes {
     padding: 0.25em;
   }
 }
-#home {
+#welcome {
   h1 {
     color: $highlight_color
   }
+  main {
+    margin: 0 auto;
+    width: 360px;
+  }
+}
+span.login {
+  margin-left: 1em;
 }
