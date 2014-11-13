@@ -1,5 +1,6 @@
 class NotesController < ApplicationController
 
+  before_action :authorize_user, except: :index
   before_action :load_notes
 
   def index

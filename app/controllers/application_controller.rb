@@ -4,6 +4,10 @@ class ApplicationController < ActionController::Base
   protect_from_forgery with: :exception
   helper_method :current_user
 
+  def authorize_user
+    redirect_to new_session_path, alert: 'Not authorized' if current_user.nil?
+  end
+
   private
 
   def current_user

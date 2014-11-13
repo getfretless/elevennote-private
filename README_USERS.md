@@ -171,8 +171,31 @@ def destroy
 end
 ```
 
+## Restricting access to non-logged in users
+
+Now that we have `current_user`, let's make it so that users that aren't logged in can't do very much. Let's start by making an application-wide method to keep non-logged-in users from seeing things they shouldn't.
+
+_app/controllers/application_controller.rb_
+```ruby
+def authorize_user
+  redirect_to new_session_path, alert: 'Not authorized' if current_user.nil?
+end
+```
+
+_app/controllers/application_controller.rb_
+```ruby
+before_action :authorize_user, except: :index
+```
+
+Now, if we log out, the site gets a lot less interesting.
+We can't access any notes, however we can log in or sign out.
+Let's log back in.
+
 ## Scoping notes to users
 
-
-
+We've created a bunch of Notes, but none of them are owned by us yet, let's change that so that they do. Open up `bin/rails console` and run this:
+```ruby
+user = User.last # assuming that is *your* user record
+Note.update_all(user_id: user.id)
+```
 
