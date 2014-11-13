@@ -12,8 +12,11 @@ module ApplicationHelper
   end
 
   def title_placeholder
-    return 'Title Your Note' if current_user.notes.any?
-    'Title Your First Note'
+    if current_user.notes.any? &:persisted?
+      'Title Your Note'
+    else
+      'Title Your First Note'
+    end
   end
 
   def title_autofocus?(note)
