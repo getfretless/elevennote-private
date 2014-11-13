@@ -199,3 +199,7 @@ user = User.last # assuming that is *your* user record
 Note.update_all(user_id: user.id)
 ```
 
+Look around the app. There are lots of calls like `@note = Note.find params[:id]`. We should only be able to see our own notes, and notes created by us, should have thier ownership set.
+
+Replace instances of `Note.find` with `current_user.notes.find`, and in the `load_notes` method, only load notes `if current_user.present?`, since the `index` view is still shown to not-logged-in users.
+
