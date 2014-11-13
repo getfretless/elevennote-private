@@ -75,7 +75,7 @@ _app/views/users/new.html.erb_
 ```
 _app/models/user.rb_
 ```ruby
-validates :username, uniqueness: true
+validates :username, presence: true, uniqueness: true
 ```
 
 We also know that we'll want to keep track of when the user is logged in or out. Typically, we call this a session. Let's make a sessions controller to log in and out. `new` for the login page, `create` for actually logging in, and `destroy` for logging out.

@@ -1,11 +1,13 @@
-class API::V1::NotesController < ApplicationController
+class API::V1::NotesController < API::APIController
+
+  before_action :authorize_api_key
 
   def index
-    @notes = Note.all
+    @notes = current_api_user.notes.all
   end
 
   def show
-    @note = Note.find params[:id]
+    @note = current_api_user.notes.find params[:id]
   end
 
 end
