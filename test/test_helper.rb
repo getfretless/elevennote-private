@@ -15,7 +15,31 @@ class ActionDispatch::IntegrationTest
   include Capybara::DSL
 
   Capybara.default_driver = :webkit
+  # Capybara.default_driver = :selenium
+
   def teardown
     Capybara.reset_sessions!
+    Capybara.use_default_driver
   end
+
+  def login(user)
+    visit '/'
+    click_link 'Sign in'
+    fill_in 'user[username]', with: user.username
+    fill_in 'user[password]', with: 'password'
+    click_button 'Sign In'
+  end
+
+  def logout
+    click_link 'Logout' if page.has_content? 'Logout'
+  end
+
+  def fill_in_richtext(page, content)
+    if Capybara.current_driver == :selenium
+      page.execute_script "Bootsy.areas['note_body_html'].editor.setValue('#{content}');"
+    else
+      fill_in 'note[body_html]', with: content
+    end
+  end
+
 end
