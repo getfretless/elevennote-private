@@ -459,9 +459,11 @@ If viewing JSON with your web browser is something you do often, try installing 
 
 Let's take a look at the source in elevenpeeps for a minute to see what it is doing.
 
-This is pretty great, but if you need to have standardized interfaces for 3rd-party integrations, then it is best to not have API code intermixed with our web application code.
+This is a pretty great feature (being able to have different responses to the same controller action/route), but if you need to have a standardized interface for 3rd-party integrations, then it is best to not have API code intermixed with our web application code.
 
-Let's add a new controller for the api, and since we want this to have a similar RESTful structure as the rest of our app, let's namespace it under `/api`, so `/api/notes.json` is a different action than the normal route `notes#index`.
+As we go through our codebase to make future changes and enhancements, it becomes hard to keep ourselves from breaking or changing our API, or, if we can manage to make sure we never break that API (through automated tests), then we can end up with little islands of code we don't like that *have* to be there to avoid breaking the API.
+
+Let's add a new controller *just* for the api, and since we want this to have a similar RESTful structure as the rest of our app, let's namespace it under `/api`, so `/api/notes.json` is a different action than the normal route `notes#index`.
 
 Additionally, let's namespace it under a version number, so if we have to change this API in the future, we don't break backwards compatibility with clients that have done integrations against your older versions of the API.
 
@@ -474,7 +476,13 @@ namespace :api do
 end
 ```
 
-And add the necessary folders and files to get a file at `app/controllers/api/v1/notes_controller.rb` with a basic `index` action that responds to `.json`:
+Let's add a custom inflector, since I know that Rails is going to inflect the word `api` to `Api` instead of `API`:
+_config/initialisers/inflections.rb_
+```ruby
+inflect.acronym 'API'
+```
+
+Add the necessary folders and files to get a file at `app/controllers/api/v1/notes_controller.rb` with a basic `index` action that responds to `.json`:
 ```ruby
 class API::V1::NotesController < ApplicationController
   def index
@@ -565,3 +573,119 @@ end
 ```
 
 And now you can remove all `respond_to :json` calls in the api controllers.
+
+If we load this up in the browser at `localhost:3000/api/v1/notes.json` we should see our note data, as well as an url that we can click (or consume with the API) to get to the data for each note.
+
+## API authorization
+
+Now that we've got that working, we need to scope the notes to the currently logged_in user.
+
+Like we did yesterday when we built our own auth system, we want to build a method that we call in a `before_action` to check for a `current_user`, but since this is a JSON API, we can't expect to be able to save a session cookie, so we will use a `token` in its place.
+
+Let's create a migration with `bin/rails g migration add_api_key_to_user`:
+```ruby
+class AddAPIKeyToUser < ActiveRecord::Migration
+  def change
+    add_column :users, :api_key, :string
+  end
+end
+```
+
+Let's for the moment assume that a user's API token is just a longish string of random stuff, kind of like a password. We've seen that `has_secure_password` creates a longish digest that looks kind of like that sort of thing.
+
+Let's use `BCrypt` to encrypt something, because encryption is cool.
+(By the way, BCrypt encryption isn't *reversible* encryption, it just creates a complex *digest* of whatever you pass it, and if you pass it the same thing twice, the digests will match, but there's no way to get the password back from the digest, unless you try all possible letter combinations to make a successfull match, which could take a very long time)
+
+Because I don't really want to bother someone with a "setting your API key screen" right now, let's make a `before_create` action on our `User` model to set a BCrypt digest as the api key:
+
+_app/models/user.rb_
+```ruby
+before_create :generate_api_key
+
+private
+
+def generate_api_key
+  self.api_key = BCrypt::Password.create(password_digest)
+end
+```
+
+Whoa, what are you doing here? I'm taking the `password_digest` (which is already a long BCrypt-generated string), and using it as the seed for a new BCrypt key, and setting it on the user when they sign up.
+
+Now I need a way to authorize, and a way to get `current_user` in the scope of a JSON request.
+
+We could add this to our `ApplicationController`, but then we'd be mixing our API chocolate into the main apps peanut butter, so let's make a new base controller for just the API.
+
+_app/controllers/api/v1/api_controller.rb_
+```ruby
+class API::APIController < ApplicationController
+  skip_before_action :verify_authenticity_token
+
+  protected
+
+  def authorize_api_key
+    unless current_api_user.present?
+      render nothing: true, status: :unauthorized
+    end
+  end
+
+  private
+
+  def current_api_user
+    @current_api_user ||= User.find_by(api_key: params[:api_key]) if params[:api_key]
+  end
+end
+```
+
+This is going to inherit from our main ApplicationController (which, in turn, inherits from `ActionController::Base`). We could have inherited from `ActionController::Base` instead here, too, but this way we could potentially have access to any application-wide helpers we may add in the future.
+
+We're also turning of CSRF protection for all of the API here, because it's tough to send that form authenticity token to the consumer, and have them send it back (it is doable, but outside the scope of this example).
+
+Let's go back to our api notes_controller and change it to inherit from api_controller and check for api key on every response:
+_app/controllers/api/v1/notes_controller.rb_
+```
+class API::V1::NotesController < API::APIController
+
+  before_action :authorize_api_key
+```
+
+And scope all the queries for notes to the `current_api_user`:
+_app/controllers/api/v1/notes_controller.rb_
+```ruby
+def index
+  @notes = current_api_user.notes.all
+end
+
+def show
+  @note = current_api_user.notes.find params[:id]
+end
+```
+
+Now, if we've wired everything together correctly, we should be able to see our stuff if we pass `params[:api_key]` to all our requests.
+
+(Many API's actually have you send the API key in a HTTP header, but let's keep things simple today).
+
+Let's get the api_key for a user in our app, and pass that along in the request like this:
+
+```
+http://localhost:3000/api/v1/notes?api_key=some_long_api_key
+```
+
+Huzzah! (or not?!?)
+
+We also want to be able to create notes from the API, so let's implement that action, too.
+_app/controllers/api/v1/notes_controller.rb_
+```ruby
+def create
+  note = current_api_user.notes.build note_params
+  if note.save
+    redirect_to api_v1_note_path(note)
+  else
+    render json: note.errors, status: :unprocessable_entity
+  end
+end
+```
+
+## Token expiration
+
+Add token_expires_at column to user and set expiry to 1.day
+Check if token is expired in `authorize_api_key`. If so, make them log in again (through the API).
