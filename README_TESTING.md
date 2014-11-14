@@ -228,3 +228,16 @@ $ bin/rake
 ```
 
 Sometimes, it is helpful to do some debugging in our tests, but it can be hard when you can't actually see the test in progress. Capybara comes with some helpers we can drop in our code (in addition to the trusty `binding.pry`): `save_and_open_page` and `save_and_open_screenshot`. If you don't have `launchy` installed, you can just `open tmp/capybara` to preview and open the files those commands create.
+
+For funsies, lets comment out the line to run with the `:webkit` driver, and use the `:selenium` driver:
+_test/test_helper.rb_
+```ruby
+# Capybara.default_driver = :webkit
+Capybara.default_driver = :selenium
+```
+
+and run:
+
+```shell
+$ bin/rake
+```
