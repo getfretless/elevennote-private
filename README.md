@@ -685,7 +685,22 @@ def create
 end
 ```
 
+I'm not going to try this just yet, but create an integration that will.
+
+## API Integration
+
+Back in `Elevennit`, wouldn't it be nice if we could click a button, and have a post show up in our `ElevenNote`?
+
+Let's implement a class using `HTTParty` to consume and post to the api.
+
+* Add HTTParty and Bundle
+* Add Class
+* Add api_key to secrets.yml (in a real app, this would probably be a per-user setting, but let's assume for now that every user of Elevennit can post to this one ElevenNote account)
+* Make sure it works by firing up elevennote, and using the console of elevennit to interact with the API.
+
+* Wire up button
+
 ## Token expiration
 
-Add token_expires_at column to user and set expiry to 1.day
-Check if token is expired in `authorize_api_key`. If so, make them log in again (through the API).
+Add token_expires_at column to user and set expiry to 1.day.from_now
+Check if token is expired in `authorize_api_key`. If so, make them log in again (through the API). Create api/v1/sessions_controller.rb and have #create set a new api_key and api_key_expires_at
