@@ -4,7 +4,7 @@ class SessionsIntegrationTest < ActionDispatch::IntegrationTest
 
   test 'Allows a guest to sign up' do
     visit '/'
-    fill_in 'user_name', with: 'David Jones'
+    fill_in 'user[name]', with: 'David Jones'
     fill_in 'user[username]', with: 'unixmonkey'
     fill_in 'user[password]', with: 'password'
     click_button 'Sign Up'

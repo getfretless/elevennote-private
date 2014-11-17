@@ -21,6 +21,8 @@ class NotesIntegrationTest < ActionDispatch::IntegrationTest
     fill_in 'note[title]', with: 'Food'
     fill_in_richtext page, '<ul><li>Baloney</li></ul>'
     click_button 'Update Note'
+    assert page.has_content? 'Saved!'
+    assert page.has_content? 'Baloney'
   end
 
   test 'Deleting a note removes it' do
